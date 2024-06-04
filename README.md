@@ -1,101 +1,113 @@
-# Amazon Rekognition Liveness Detection in Angular
+# Amazon Rekognition Face Liveness
+
+A sample code to implement Amazon Rekognition Face Liveness to detect real users and deter bad actors using spoofs in seconds during facial verification.
+
+## What is Amazon Rekognition Face Liveness?
+[Amazon Rekognition Face Liveness](https://aws.amazon.com/rekognition/face-liveness/) helps you verify that a user going through facial verification is physically present in front of a camera. It detects spoof attacks presented to a camera or trying to bypass a camera. Users can complete a Face Liveness check by taking a short video selfie where they follow a series of prompts intended to verify their presence.
+
+We can easily add Face Liveness to the React web, native iOS, and native Android applications using open-source AWS Amplify SDKs.Face Liveness uses ML models trained on diverse datasets to support high accuracy across user skin tones, ancestries, and devices.
+
+## Architecture
+
+![RekognitionLivenessArchitectureDeveloperGuide_v2.jpg](https://docs.aws.amazon.com/images/rekognition/latest/dg/images/RekognitionLivenessArchitectureDeveloperGuide_v2.jpg)
+
+## Components
+Face Liveness uses multiple components:
+
+* AWS Amplify SDK with FaceLivenessDetector component
+* AWS SDKs
+* AWS Cloud APIs
 
 
-#### AWS recently launched the [Amazon Rekognition Face Liveness feature](https://aws.amazon.com/about-aws/whats-new/2023/04/amazon-rekognition-face-liveness-deter-fraud-facial-verification/). This new feature helps deter fraud in facial verification.
+When we configure our application to integrate with Face Liveness feature, it uses the following API operations:
+
+* CreateFaceLivenessSession - Starts a Face Liveness session, letting the Face Liveness detection model be used in your application. Returns a SessionId for the created session.
+
+* StartFaceLivenessSession - Called by the AWS Amplify FaceLivenessDetector. Starts an event stream containing information about relevant events and attributes in the current session.
+
+* GetFaceLivenessSessionResults - Retrieves the results of a specific Face Liveness session, including a Face Liveness confidence score, reference image, and audit images.
+
+## Prerequisites
 
 
-![Automated Liveness Detection](/images/challenges.png)
-
-
-
-* With AWS Amplify you could easily plug Face liveness detection on your Android/IOS/Browser. It currently supports the below [frameworks](https://ui.docs.amplify.aws/react/connected-components/liveness):
-  1. [Android](https://ui.docs.amplify.aws/android/connected-components/liveness)
-  2. [React](https://ui.docs.amplify.aws/react/connected-components/liveness)
-  3. [Swift](https://ui.docs.amplify.aws/swift/connected-components/liveness)
-
-* This solution allows you to integrate Amazon Rekognition face liveness with your existing Angular Application. It uses the  FaceLivenessDetector component from React and wraps it as an Angular Component. 
-* FaceLivenessDetector component is responsible from starting the liveness session. Once the results are ready it notifies us via callback functions. 
-
-#### Steps to run using AWS Amplify
-1. [Install Amplify CLI on your local machine](https://docs.amplify.aws/cli/start/install/#pre-requisites-for-installation)
-```
-   npm install -g @aws-amplify/cli
-```
-
-2. [Configure Amplify CLI](https://docs.amplify.aws/start/getting-started/installation/q/integration/angular/#configure-the-amplify-cli)
-```
-   amplify configure
-```
-
-3. Clone this project
-```
-   git clone <TODO add path>
-``` 
-4. Open a new terminal. From the root of the project, run:
-```
-   amplify init
-```
-   ![amplify_init](/images/amplify_init.png)
-
-5. Install Project dependencies. Fire the below command in a terminal from the root of your project foler
-
-```
-   npm install
+```sh
+# Setup the AWS CLI
+aws configure                                                                     
 ```
 
-6. Add Cognito Authentication. Fire the below command in a terminal from the root of your project folder
-```
-  amplify add auth
-```
- ![amplify_add_auth](/images/amplify_add_auth.png)
+Locally installing on a workstation requires the following steps. 
 
-7. Push your changes
-```
-  amplify push
+1. Locally install AWS CDK as the [official documentation](https://docs.aws.amazon.com/cdk/latest/guide/getting_started.html) describes.
+2. [Bootstrap CDK for AWS Account](https://github.com/aws/aws-cdk/blob/master/design/cdk-bootstrap.md) 
+3. Install Python >=3.6 from [python.org](http://python.org/)
+4. Create a Python virtual environment
+  ```sh
+  python3 -m venv .venv                                      
+  ```
+
+5. Activate virtual environment
+  On MacOS or Linux
+  ```sh
+  source .venv/bin/activate                                       
+  ```
+  On Windows
+  ```sh
+    .venv\Scripts\activate.bat                                        
+  ```
+
+
+
+## Solution Deployment
+
+The [one-click.sh](https://github.com/aws-samples/amazon-rekognition-face-liveness/blob/main/one-click.sh) utility script is the recommended procedure for deploying a Rekognition Face Liveness(rfl) stack into an AWS Account.  It automates every step including installing missing dependency and executing all Out-Of-Band (OOB) operations.  Additionally, there is support for upgrading existing environments and seamlessly handling any future requirements.  
+
+
+This table enumerates the overridable environment variables.  The deployment script supports deploying multiple stacks within the same account and region (e.g., Prod and Dev in us-east-1).  Additionally, the default settings support 200M unique faces.  Please contact us at rekognition-identity-verification@amazon.com for instructions beyond this threshold.  Lastly, AWS CloudFormation requires the Amazon S3 bucket and deployment region are the same.  When these values differ the *create-stack* command fails with a descriptive error.
+
+```sh
+
+# Customers can deploy multiple instances to the same region (Prod vs Dev)
+# If this value is not set then it defaults to 'Rfl-Prod'
+# You control this functionality by setting the Landing Zone Name value
+export RFL_STACK_NAME=Rfl-Prod
+
+# Running this command will install any dependencies (brew, yum, or apt required)
+# After preparing the local machine it will synthesize and deploy into your environment.
+./one-click.sh
 ```
 
-8. Verify if aws-exports.ts file has all the Auth details. We reference properties from this file when generating creadentials to communicate with Amazon Rekognition.
-![amplify_exportjs](/images/amplify_exportjs.png)
 
-9. Update IAM permissions. Search for IAM role of type 'amplify-**{your-app-name}-{environment}-{random-number}**-authRole' generated by amplify and add the below inline policy that supports liveness detection features
-```
-   {
-    "Version": "2012-10-17",
-    "Statement": [
-        {
-            "Effect": "Allow",
-            "Action": "rekognition:StartFaceLivenessSession",
-            "Resource": "*"
-        },
-        {
-            "Effect": "Allow",
-            "Action": "rekognition:CreateFaceLivenessSession",
-            "Resource": "*"
-        },
-        {
-            "Effect": "Allow",
-            "Action": "rekognition:GetFaceLivenessSessionResults",
-            "Resource": "*"
-        }
-    ]
-}
-```
-![amplify_auth_role](/images/amplify_auth_role.png)
-![amplify_attach_policy](/images/amplify_attach_policy.png)
+## How do I run the amplify app locally
+#First create a .env.local file in the frontend directory with the following contents:
 
-10. To run on local machine
 ```
-   ng serve
-```
-11. To view the hosted application on Amplify
-```
-   amplify console
-```
-12. Once you create an account and login you should see the below screen
-![main_screen](/images/face_liveness_main_screen.png)
+REACT_APP_ENV_API_URL=https://YOUR_API_GW_STAGE_URL
+REACT_APP_IDENTITYPOOL_ID=AMAZON_COGNITO_IDENTITYPOOL_ID
+REACT_APP_REGION=AMAZON_COGNITO_APP_REGION
+REACT_APP_USERPOOL_ID=AMAZON_COGNITO_APP_USERPOOL_ID
+REACT_APP_WEBCLIENT_ID=AMAZON_COGNITO_APP_WEBCLIENT_ID
 
-13. Click on **Begin Check** for automated liveness detection
-![challenge1](/images/challenge1.png)
 
-14. Wait for verification. This service gives you a confidence score for face liveness.
-![verification](/images/verification.png)
+```
+
+#Install depedency and start the app
+
+```
+npm install
+npm start
+
+```
+
+
+## How is the code organized
+
+
+- [infra](infra).  CDK Automation for provisioning the environment(s)
+  - [facelivenessbackend](infra/facelivenessbackend/).  The RFL backend
+  - [frontend](infra/frontend/). React Frontend Web App infra for Amazon Rekognition Face Liveness
+- [src](src).  The backing code for Lambdas functions and other compute constructs
+  - [liveness-session-result](src/backend/start-liveness-session/).  Backent to start the Face Liveness Session
+  - [liveness-session-result](src/backend/liveness-session-result/).  Backent to get the Face Liveness Session Result
+  - [frontend](src/frontend).  React Frontend Web App for Amazon Rekognition Face Liveness
+
+
