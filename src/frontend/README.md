@@ -1,6 +1,26 @@
 # Getting Started with Create Face Liveness React App
 
 
+const myHeaders = new Headers();
+myHeaders.append("Content-Type", "application/json");
+myHeaders.append("X-API-KEY", "3646f320-aee6-452f-96f8-23718f3000b6");
+
+const raw = JSON.stringify({
+  "reqToken": "89e35a68-0ce3-45e8-ae43-88d1f3776fbe"
+});
+
+const requestOptions = {
+  method: "POST",
+  headers: myHeaders,
+  body: raw,
+  redirect: "follow"
+};
+
+fetch("https://ssiapi-staging.smartfalcon.io/liveness/create", requestOptions)
+  .then((response) => response.text())
+  .then((result) => console.log(result))
+  .catch((error) => console.error(error));
+
 ## First create a .env.local file in the frontend directory with the following contents:
 
 ```
