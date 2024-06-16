@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import { Loader } from '@aws-amplify/ui-react';
 import '@aws-amplify/ui-react/styles.css';
 import { FaceLivenessDetector } from '@aws-amplify/ui-react-liveness';
+import { v4 as uuidv4 } from 'uuid';
+
 
 function FaceLiveness({ faceLivenessAnalysis }) {
     const [loading, setLoading] = useState(true);
@@ -13,8 +15,12 @@ function FaceLiveness({ faceLivenessAnalysis }) {
     myHeaders.append("Content-Type", "application/json");
     myHeaders.append("X-API-KEY", "3646f320-aee6-452f-96f8-23718f3000b6");
 
+    const newUUID = uuidv4();
+    console.log(newUUID); // This will log a new UUID to the console
+
+
     const raw = JSON.stringify({
-        "reqToken": "89e35a68-0ce3-45e8-ae43-88d1f3776fbe"
+        "reqToken": newUUID
     });
 
     const requestOptions = {
